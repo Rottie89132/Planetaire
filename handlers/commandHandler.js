@@ -15,16 +15,16 @@ async function loadCommands(client) {
   
         if (command.permission) {
           if (Perms.includes(command.permission)) {command.defaultPermission = false;}
-          else {return table.addRow(command.data.name, 'Ofline');
+          else {
+            return console.log(`  \x1b[32m> Commands:\x1b[0m ${command.data.name} failed to load`)
           }
         }
   
         commandsArray.push(command.data.toJSON());
-        table.addRow(command.data.name, "Online");
       })
 
     client.application.commands.set(commandsArray);
-    return console.log(table.toString())
+    return //console.log(`  \x1b[32m> Commands:\x1b[0m loaded`);
   }
   
   module.exports = { loadCommands };

@@ -1,5 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits  } = require("discord.js");
 const database = require("../../Schemas/ReviewsSchema");
+const SetCooldown = require("../../Schemas/Cooldowns")
 
 module.exports = 
 {
@@ -7,7 +8,7 @@ module.exports =
         CustomId: "selection"
     },
     async execute(interaction) {
-        const { values, member } = interaction
+        const { values, member, guild } = interaction
         const InteractionMsg = await interaction.message
         const button = new ActionRowBuilder()
         const row = new ActionRowBuilder()
@@ -34,6 +35,22 @@ module.exports =
             if (!member.permissions.has(PermissionFlagsBits.Administrator))
             return interaction.reply({content: `You do not have the required permission for this command`, ephemeral: true})
         
+            let GetCooldown = await SetCooldown.findOne({MessageID: InteractionMsg.id, GuildId: guild.id})
+            if(GetCooldown) {
+                DataCooldown = Number(GetCooldown.Cooldown) + 15 * 60000
+                
+                if(Date.now() < DataCooldown) {
+                    
+                    Miliseconds = DataCooldown - Date.now()
+                    Minutes = Math.floor((Miliseconds % (1000 * 60 * 60 * 60)) / (1000 * 60))
+                    Seconds = Math.floor((Miliseconds % (1000 * 60 )) / 1000)
+                    waitTime = Minutes,TextTime = "minutes"
+        
+                    if(Minutes < 1){waitTime = Seconds}if(Minutes < 1){TextTime = "seconds"}
+                    return interaction.reply({content: `You can lock this review in ${waitTime} ${TextTime}`, ephemeral: true})
+                }
+            }
+
             return interaction.reply({content: `Lock this message?\n**Message ID:** ${InteractionMsg.id}`,
             components:  [button.addComponents(
                 new ButtonBuilder().setCustomId('LockedSelect').setLabel('Confirm').setStyle(ButtonStyle.Danger),
@@ -44,8 +61,7 @@ module.exports =
         if(values[0] == 2) 
         {
             if(interaction.user.id !== UsersReviewId) 
-            {interaction.reply({content: ` You can't edit reviews you didn't make `
-            , ephemeral: true})} 
+            {interaction.reply({content: ` You can't edit reviews you didn't make `, ephemeral: true})} 
             else if(Current < TimeTo) {
                 Miliseconds = TimeTo - Current
                 Minutes = Math.floor((Miliseconds % (1000 * 60 * 60 * 60)) / (1000 * 60))
@@ -54,7 +70,7 @@ module.exports =
     
                 if(Minutes < 1){waitTime = Seconds}if(Minutes < 1){TextTime = "seconds"}
                 interaction.reply({content: `You can edit this review in ${waitTime} ${TextTime}`, ephemeral: true})
-            }else {
+            } else {
                 row.addComponents
                 (
                     new ButtonBuilder().setCustomId('EditDescription').setLabel(`Description`).setStyle(ButtonStyle.Secondary),
@@ -65,9 +81,8 @@ module.exports =
                 receivedEmbed = interaction.message.embeds[0];
                 embed = EmbedBuilder.from(receivedEmbed).setTimestamp()
                 interaction.reply({content: `**Message ID:** ${InteractionMsg.id}`, embeds: [embed], components: [row], ephemeral: true })
-             }
+            }
         }
-         
         if(values[0] == 3) 
         {
             if(interaction.user.id !== UsersReviewId && !interaction.member.permissions.has("MANAGE_MESSAGES")) 
@@ -83,16 +98,5 @@ module.exports =
                 new ButtonBuilder().setCustomId('Dismiss').setLabel('Cancel').setStyle(ButtonStyle.Secondary)
             )], ephemeral: true})
         }
-         
-
-
-
-
-
-
-
-
-
-
     }
 }

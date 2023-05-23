@@ -15,16 +15,16 @@ async function loadModals(client) {
 
       if (modal.permission) {
         if (Perms.includes(modal.permission)) {modal.defaultPermission = false;}
-        else {return table.addRow(modal.data.CustomId, 'Ofline');
+        else {return table.addRow(modal.data.CustomId, '🔴');
         }
       }
 
       modalsArray.push(modal.data);
-      table.addRow(modal.data.CustomId, "Online");
+      table.addRow(modal.data.CustomId, "🟢");
     })
   
   client.buttons.set(modalsArray);
-  return console.log(table.toString())
+  return //console.log(`  \x1b[32m> modals:\x1b[0m loaded`);
 }
 
 module.exports = { loadModals };

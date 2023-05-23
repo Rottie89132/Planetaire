@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const database = require("../../Schemas/ReviewsSchema");
 
 module.exports = {
@@ -23,7 +23,7 @@ module.exports = {
             return [Embed]}
 
         if(User.user.bot) return interaction.reply({
-             embeds: LoadEmbed("User error has occured",
+            embeds: LoadEmbed("User error has occured",
                 "You can't check a bot silly. \nPlease mention someone else instead.",
                 ColorResults[0]), ephemeral: true})
 

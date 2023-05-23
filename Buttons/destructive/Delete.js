@@ -1,7 +1,7 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const Config = require("../../items/config.json");
-const database = require("../../Schemas/ReviewsSchema");
-const database2 = require("../../Schemas/Setup");
+const ReviewsSchema = require("../../Schemas/ReviewsSchema");
+const SetupSchema = require("../../Schemas/Setup");
+const SetCooldown = require("../../Schemas/Cooldowns")
 
 module.exports = 
 {
@@ -14,12 +14,15 @@ module.exports =
         const button = new ActionRowBuilder()
         const Embed = new EmbedBuilder()
 
-        let GuildData = await database2.findOne({GuildId: guild.id, GuildName: guild.name})
+        let GuildData = await SetupSchema.findOne({GuildId: guild.id, GuildName: guild.name})
         if(!GuildData) return interaction.reply({content: `Review could not be deleted\nNo log channel was found pls try again after setting one up with /review-setup`, ephemeral: true})
         const logchannel = client.channels.cache.get(GuildData.LogChannel);
 
+
         const id = interaction.message.content.split(':**')[1]; await interaction.deferUpdate();
-        const Delete = await interaction.channel.messages.fetch(id); Delete.delete()
+        const Message = await channel.messages.fetch(id); Message.delete()
+
+        await SetCooldown.findOneAndDelete({GuildId: guild.id, MessageID: id.slice(1)});
         
         Embed.setTitle("ChangeLog")
         Embed.setDescription(`Review got deleted by ${interaction.member}\n\n**ID:**\nMessage: ${id}`)
@@ -31,7 +34,7 @@ module.exports =
         await interaction.editReply({ content: `Message got deleted`, components: [button]})
 
         try {
-            let UserData = await database.findOneAndUpdate(
+            let UserData = await ReviewsSchema.findOneAndUpdate(
                 { "Data.ReviewId": id.replace(" ","")},
                 { $pull: { "Data" : {"ReviewId": id.replace(" ","")}}},{multi:true}
             ); await UserData.save()

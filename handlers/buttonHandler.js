@@ -1,29 +1,30 @@
 async function loadButtons(client) {
   const { loadFiles } = require("../Functions/fileloader");
   const { Perms } = require('../Validator/Permissions')
-  const Ascii = require('ascii-table')
-  const table = new Ascii().setHeading("Buttons", "Status");
 
-  await client.buttons.clear();
-  let buttonsArray = [];
+  client.buttons = new Map()
+  const buttonsArray = new Array();
+  const buttons = new Array();
 
-  const Files = await loadFiles("Buttons");
+  const files = await loadFiles("Buttons");
   
-  Files.forEach((file) => {
+  files.forEach((file) => {
       const button = require(file);
       client.buttons.set(button.data.CustomId, button);
 
       if (button.permission) {
         if (Perms.includes(button.permission)) {button.defaultPermission = false;}
-        else {return table.addRow(button.data.CustomId, 'Ofline');
+        else {
+          return buttons.push({Name: button.data.CustomId, Status: "Ofline"});
         }
       }
 
       buttonsArray.push(button.data);
-      table.addRow(button.data.CustomId, "Online");
+      buttons.push({Name: button.data.CustomId, Status: "Online"})
+      
     })
   client.buttons.set(buttonsArray);
-  return console.log(table.toString())
+  return //console.log(`  \x1b[32m> Buttons:\x1b[0m loaded`);
 }
 
 module.exports = { loadButtons };

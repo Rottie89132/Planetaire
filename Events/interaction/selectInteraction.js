@@ -3,7 +3,7 @@ const { InteractionType } = require('discord.js');
 module.exports = {
     name: "interactionCreate",
     execute(interaction, client) {
-        if(!interaction.isSelectMenu()) return;
+        if(!interaction.isStringSelectMenu()) return;
         const Selection = client.selects.get(interaction.customId);
 
         if(!Selection) {

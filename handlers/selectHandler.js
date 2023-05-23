@@ -15,15 +15,15 @@ async function loadSelection(client) {
 
       if (select.permission) {
         if (Perms.includes(button.permission)) {button.defaultPermission = false;}
-        else {return table.addRow(select.data.CustomId, 'Ofline');
+        else {return table.addRow(select.data.CustomId, '🔴');
         }
       }
 
       selectArray.push(select.data);
-      table.addRow(select.data.CustomId, "Online");
+      table.addRow(select.data.CustomId, "🟢");
     })
   client.selects.set(selectArray);
-  return console.log(table.toString())
+  return //console.log(`  \x1b[32m> Selects:\x1b[0m loaded\n`);
 }
 
 module.exports = { loadSelection };

@@ -1,5 +1,5 @@
 const { Client, Collection } = require('discord.js')
-const client = new Client({intents: 130685})
+const client = new Client({intents: [32767, 130685] })
 const Config = require("./items/config.json");
 
 const { loadEvents } = require("./handlers/eventHandler");
@@ -12,9 +12,12 @@ client.buttons = new Collection()
 client.selects = new Collection()
 client.modals = new Collection()
 
-const { connect } = require("mongoose");
-connect(Config.DataBaseUrl, {}).then(() => console.log(`Planetaire#9265 is connected to the database`))
+const mongoose = require("mongoose");
+mongoose.set('strictQuery', false)
+mongoose.connect(Config.DataBaseUrl, {}).then(() => console.log(`\x1b[32m√\x1b[0m Database successfully connected!`))
 
 loadEvents(client);
 
 client.login(Config.token)
+
+

@@ -1,8 +1,7 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, SelectMenuBuilder  } = require("discord.js");
-const Config = require("../../items/config.json");
-const database = require("../../Schemas/ReviewsSchema");
-const DataBase2 = require("../../Schemas/UserInfo")
-const database3 = require("../../Schemas/Setup");
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder  } = require("discord.js");
+const ReviewsSchema = require("../../Schemas/ReviewsSchema");
+const UserInfoSchema = require("../../Schemas/UserInfo")
+const SetupSchema = require("../../Schemas/Setup");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,10 +10,16 @@ module.exports = {
     .setDMPermission(false)
     .addUserOption(option => option.setName('target').setDescription('Provide a user to review.').setRequired(true))
 	.addStringOption((option) => option.setName("rating").setDescription("Provide a rating between 1 and 5.").setRequired(true)
-    .addChoices ({ name: '5 star rating', value: '5' },{ name: '4 star rating', value: '4' },
-    { name: '3 star rating', value: '3' },{ name: '2 star rating', value: '2' },{ name: '1 star rating', value: '1' }))
+    .addChoices (
+        { name: '5 star rating', value: '5' },
+        { name: '4 star rating', value: '4' },
+        { name: '3 star rating', value: '3' },
+        { name: '2 star rating', value: '2' },
+        { name: '1 star rating', value: '1' }
+        ))
     .addStringOption((option) => option.setName("description").setDescription("Provide the description.").setRequired(true)),
     async execute(interaction, client) {
+        
         const { options, guild, member} =  interaction;
         const target  = options.getMember("target") || interaction.member;
         const rating = options.getString("rating");
@@ -25,7 +30,7 @@ module.exports = {
         RatingResults = ["⬜️⬜️⬜️⬜️⬜️", "🟥⬜️⬜️⬜️⬜️", "🟨🟨⬜️⬜️⬜️", "🟧🟧🟧⬜️⬜️", "🟩🟩🟩🟩⬜️", "🟩🟩🟩🟩🟩"]
         ColorResults = ["#364ec7", "#ff0000", "#ffd900", "#ff6600", "#49c736", "#49c736"]
         date = new Date().getTime()
-          
+        
 //========================================================================================================================================
 
         function LoadEmbed (Title, Description, Color, Timestamp, Thumbnail, Footer) {
@@ -41,12 +46,12 @@ module.exports = {
                     new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(Label).setURL(Url),
                     new ButtonBuilder().setCustomId('DmDelete').setLabel(`Dismiss`).setStyle(ButtonStyle.Primary)
                     ); else button.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(Label).setURL(Url));
-           return [button]}
+            return [button]}
 
         function LoadSelect () {
             const select = new ActionRowBuilder()
             select.addComponents(
-            new SelectMenuBuilder().setCustomId('selection').addOptions(
+            new StringSelectMenuBuilder().setCustomId('selection').addOptions(
 						{
                             emoji: `1013433291929571420`,
 							label: 'Send a report',
@@ -70,25 +75,25 @@ module.exports = {
 
 //========================================================================================================================================
 
-        let GuildData = await database3.findOne({GuildId: guild.id, GuildName: guild.name})
+        let GuildData = await SetupSchema.findOne({GuildId: guild.id, GuildName: guild.name})
         
         if(!GuildData) return interaction.reply({
             embeds: LoadEmbed("Server error has occured",
-             "No review channels found.\nPlease try again after setting one up with /review-setup.",
-              ColorResults[0]), ephemeral: true})
+                "No review channels found.\nPlease try again after setting one up with /review-setup.",
+                ColorResults[0]), ephemeral: true})
 
-        if(interaction.member._roles.includes(`746797209995182102`))
-        WaitTing = 1; else WaitTing = 2
+        //if(interaction.member._roles.includes(`746797209995182102`))
+        //WaitTing = 1; else WaitTing = 2
 
-        let ExtraData = await DataBase2.findOne({User: member.id, Guild: guild.id})
+        let ExtraData = await UserInfoSchema.findOne({User: member.id, Guild: guild.id})
         if(!ExtraData) TimeTo = Number(new Date().getTime())
-        else TimeTo = Number(ExtraData.Cooldown) + WaitTing * 60000
+        else TimeTo = Number(ExtraData.Cooldown) + 2 * 60000
     
         const Current = new Date().getTime()
         const Channel = client.channels.cache.get(GuildData.ReviewChannel)
         const LogChannel = client.channels.cache.get(GuildData.LogChannel)
 
-        if(Current < TimeTo && !target.user.id == "322393281306689536") {
+        if(Current < TimeTo /*&& !target.user.id == "322393281306689536"*/) {
             Miliseconds = TimeTo - Current
             Minutes = Math.floor((Miliseconds % (1000 * 60 * 60 * 60)) / (1000 * 60))
             Seconds = Math.floor((Miliseconds % (1000 * 60 )) / 1000)
@@ -102,13 +107,13 @@ module.exports = {
         
         if(target.user.bot) return interaction.reply({
             embeds: LoadEmbed("User error has occured",
-             "You can't review a bot silly. \nPlease mention someone else instead.",
-              ColorResults[0]), ephemeral: true})
+                "You can't review a bot silly. \nPlease mention someone else instead.",
+                ColorResults[0]), ephemeral: true})
 
-        if(target.user == interaction.member.user && !target.user.id == "322393281306689536") return interaction.reply({
+        if(target.user == interaction.member.user /*&& !target.user.id == "322393281306689536"*/) return interaction.reply({
             embeds: LoadEmbed("User error has occured",
-             "You can't review yourself silly. \nPlease mention someone else instead.",
-              ColorResults[0]), ephemeral: true})
+                "You can't review yourself silly. \nPlease mention someone else instead.",
+                ColorResults[0]), ephemeral: true})
 
 //========================================================================================================================================
 
@@ -116,7 +121,7 @@ module.exports = {
             embeds: LoadEmbed(
                 target.user.tag, `${description} \n\n**Recommendation:** \n${RatingResults[rating]}`,
                 ColorResults[rating], true, target.displayAvatarURL({ dynamic: true }),
-                 {text: `${interaction.user.username}`,
+                    {text: `${interaction.user.username}`,
                 iconURL: `https://cdn.discordapp.com/avatars/${interaction.user.id}/${interaction.user.avatar}.webp`}
             ), components: LoadSelect()})
 
@@ -124,20 +129,21 @@ module.exports = {
             ReviewId: Data.id,
             IssuerGuild: guild.id,
             IssuerId: member.id,
+            IssuerAvatar: member.user.avatar,
             IssuerTag: member.user.tag,
             Issuer_Ratting: rating,
             IssuerDesc: description,
             Creation_Date: Date.now()
         }
 
-        if(!ExtraData) ExtraData = await DataBase2.create({User: member.id, Guild: guild.id, Cooldown: Date.now()})
-        else ExtraData = await DataBase2.findOneAndUpdate(
+        if(!ExtraData) ExtraData = await UserInfoSchema.create({User: member.id, Guild: guild.id, Cooldown: Date.now()})
+        else ExtraData = await UserInfoSchema.findOneAndUpdate(
             { User: member.id, Guild: guild.id },
             { $set: { 'Cooldown': Date.now() }}
         ); await ExtraData.save()
 
-        let UserData = await database.findOne({User: target.id, Nickname: target.user.tag})
-        if(!UserData) UserData = await database.create({User: target.id, Nickname: target.user.tag, Data: [newReview]})
+        let UserData = await ReviewsSchema.findOne({User: target.id, Nickname: target.user.tag})
+        if(!UserData) UserData = await ReviewsSchema .create({User: target.id, Nickname: target.user.tag, Data: [newReview]})
         else UserData.Data.push(newReview) && await UserData.save()
 
         LogChannel.send({embeds: LoadEmbed(
@@ -146,12 +152,21 @@ module.exports = {
             \n\n**ID:**\nUser: ${interaction.member.user.id}\nMessage: [${Data.id}](${Data.url})\nTarget: ${target.user.id}`,
             ColorResults[5], true), components: LoadButtons("Link", false, "Check it out", Data.url)})
 
-        Data.startThread({name: `${target.user.tag} Case${Data.id.slice(-4)}`, type: 'GUILD_PUBLIC_THREAD'})
+        await Data.startThread({
+            name: `${target.user.tag} Case${Data.id.slice(-4)}`,
+            type: 'GUILD_PUBLIC_THREAD'
+        })
+        
+        const thread = Channel.threads.cache.find(x => x.name.includes(`${Data.id.slice(-4)}`))
+        thread.members.add(target.user.id);
+        thread.members.add(member.id);
+        thread.setRateLimitPerUser(5)
+
         interaction.reply({components: LoadButtons ("Link", false, "Check it out", Data.url), ephemeral: true})
         
         target.user.send({
             content: `You just received a review from ${interaction.user.tag} in ${interaction.guild.name}`,
-             components: LoadButtons ("Link", true, "Check it out", Data.url), ephemeral: true})
+                components: LoadButtons ("Link", true, "Check it out", Data.url), ephemeral: true})
         .catch(()=> console.log(`No direct messages got send.`))
     }  
 }
