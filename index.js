@@ -1,7 +1,5 @@
 const { Client, Collection } = require('discord.js')
 const client = new Client({intents: [32767, 130685] })
-const Config = require("./items/config.json");
-
 const { loadEvents } = require("./handlers/eventHandler");
 require("./handlers/AntiCrash.js")(client);
 
@@ -14,10 +12,10 @@ client.modals = new Collection()
 
 const mongoose = require("mongoose");
 mongoose.set('strictQuery', false)
-mongoose.connect(Config.DataBaseUrl, {}).then(() => console.log(`\x1b[32m√\x1b[0m Database successfully connected!`))
+mongoose.connect(process.env.DataBaseUrl, {}).then(() => console.log(`\x1b[32m√\x1b[0m Database successfully connected!`))
 
 loadEvents(client);
 
-client.login(Config.token)
+client.login(process.env.token)
 
 

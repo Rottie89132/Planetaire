@@ -1,5 +1,4 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const Config = require("../../items/config.json");
 const database = require("../../Schemas/ReviewsSchema");
 
 module.exports =
@@ -13,7 +12,7 @@ module.exports =
         const receivedEmbed = interaction.message.embeds[0];
         const LogEmbed = new EmbedBuilder()
         const DmTargetId = interaction.message.embeds[0].thumbnail.url.split('/')[4]
-        const channel = client.channels.cache.get(Config.ChangelogChannelId);
+        const channel = client.channels.cache.get(process.env.ChangelogChannelId);
         const embed = EmbedBuilder.from(receivedEmbed)
         const LinkRow = new ActionRowBuilder()
         const Linked = new ActionRowBuilder()

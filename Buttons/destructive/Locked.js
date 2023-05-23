@@ -1,5 +1,4 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const Config = require("../../items/config.json");
 const database = require("../../Schemas/Setup");
 
 module.exports = 
@@ -16,7 +15,6 @@ module.exports =
         Locked = receivedEmbed.description.split("\n\n")
 
         const TargetId = MessageLock.embeds[0].thumbnail.url.split('/')[4]
-        //const logchannel = client.channels.cache.get(Config.ChangelogChannelId);
         const BotUser = await guild.members.fetch(client.user.id)
         const BotHighest = BotUser.roles.highest.position
 
@@ -36,7 +34,7 @@ module.exports =
         const Member = await guild.members.fetch(TargetId)
         MemberHighest = Member.roles.highest.position
         } catch{MemberHighest = 1}
-       
+        
         tags.addComponents
         (
             new ButtonBuilder().setCustomId('LockAction').setLabel(`Report`).setStyle(ButtonStyle.Secondary).setDisabled(true),

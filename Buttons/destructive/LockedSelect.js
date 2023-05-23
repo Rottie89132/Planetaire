@@ -1,5 +1,4 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require("discord.js");
-const Config = require("../../items/config.json");
 const SetCooldown = require("../../Schemas/Cooldowns")
 
 module.exports = 
@@ -16,7 +15,7 @@ module.exports =
         const description = receivedEmbed.description
 
         const TargetId = MessageLock.embeds[0].thumbnail.url.split('/')[4]
-        const logchannel = client.channels.cache.get(Config.ChangelogChannelId);
+        const logchannel = client.channels.cache.get(process.env.ChangelogChannelId);
         const BotUser = await guild.members.fetch(client.user.id)
         const BotHighest = BotUser.roles.highest.position
 

@@ -23,7 +23,7 @@ async function loadEvents(client) {
     }
   }
 
-  console.clear();
+  //console.clear();
   console.timeEnd('\x1b[32m√\x1b[0m Events loaded in'); console.log();
 
   for (const item of events) {
