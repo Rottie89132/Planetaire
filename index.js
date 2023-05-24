@@ -18,4 +18,3 @@ loadEvents(client);
 
 client.login(process.env.token)
 
-
