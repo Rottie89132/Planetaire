@@ -27,8 +27,10 @@ module.exports = {
         date = Info.getDate();
         year = Info.getFullYear();        
         month = Info.getMonth();  
-        hour = Info.getHours();    
+        hour = Info.getHours() + Number(process.env.TimeDifference);  
         min = Info.getMinutes();
+
+        
 
         if(input == undefined)
         {input = options.getString("custom")}
