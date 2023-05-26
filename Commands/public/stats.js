@@ -5,7 +5,7 @@ module.exports = {
     data: new SlashCommandBuilder()
     .setName("review-stats")
     .setDescription("Get the average stats from the selected member.")
-    .addUserOption((option) => option.setName("member").setDescription("Provide a member to see their stats.").setRequired(false))
+    .addUserOption((option) => option.setName("member").setDescription("Provide a member to see their stats.").setRequired(true))
     .setDMPermission(false),
 
     async execute(interaction, client) {
