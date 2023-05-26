@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const wait = require('node:timers/promises').setTimeout;
 
 module.exports = 
 {
@@ -18,8 +19,12 @@ module.exports =
         const Target = options.getMember("target")
         const Message = await channel.messages.fetch()
 
+        await interaction.deferReply({ephemeral: true});
+        interaction.editReply({content: `Please wait purge in process`, ephemeral: true})
+        await wait(2000)
+
         if(Amount > 100 || Amount <= 0 )
-        {interaction.reply({content: `The amount must be atleast a 1 but it can't exceed a 100`, ephemeral: true})}
+            return interaction.editReply({content: `The amount must be atleast a 1 but it can't exceed a 100`, ephemeral: true})
         
         let ToDelete = 0
         const NormalPurge = [];
@@ -34,13 +39,13 @@ module.exports =
 
             await channel.bulkDelete(filtered, true).then(messages => {
             if(messages.size > 1){TOT = `messages`}else{TOT = `message`}
-            interaction.reply({content: `Cleared ${messages.size} ${TOT} From ${Target.user.tag}`, ephemeral: true})})
+            interaction.editReply({content: `Cleared ${messages.size} ${TOT} From ${Target.user.tag}`, ephemeral: true})})
         }
         else { 
             try {
             await channel.bulkDelete(NormalPurge, true).then(messages => {
             if(messages.size > 1){TOT = `messages`}else{TOT = `message`}
-            interaction.reply({content: `Cleared ${messages.size} ${TOT} from this channel`, ephemeral: true})})
+            interaction.editReply({content: `Cleared ${messages.size} ${TOT} from this channel`, ephemeral: true})})
             } catch {}
         }
 

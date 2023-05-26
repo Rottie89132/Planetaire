@@ -2,6 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 const ReviewsSchema = require("../../Schemas/ReviewsSchema");
 const UserInfoSchema = require("../../Schemas/UserInfo")
 const SetupSchema = require("../../Schemas/Setup");
+const wait = require('node:timers/promises').setTimeout;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -30,6 +31,9 @@ module.exports = {
         RatingResults = ["⬜️⬜️⬜️⬜️⬜️", "🟥⬜️⬜️⬜️⬜️", "🟨🟨⬜️⬜️⬜️", "🟧🟧🟧⬜️⬜️", "🟩🟩🟩🟩⬜️", "🟩🟩🟩🟩🟩"]
         ColorResults = ["#364ec7", "#ff0000", "#ffd900", "#ff6600", "#49c736", "#49c736"]
         date = new Date().getTime()
+    
+        interaction.reply({content: "Your review is getting Processed!", ephemeral: true})
+        await wait(2000);
         
 //========================================================================================================================================
 
@@ -77,13 +81,10 @@ module.exports = {
 
         let GuildData = await SetupSchema.findOne({GuildId: guild.id, GuildName: guild.name})
         
-        if(!GuildData) return interaction.reply({
+        if(!GuildData) return interaction.editReply({
             embeds: LoadEmbed("Server error has occured",
                 "No review channels found.\nPlease try again after setting one up with /review-setup.",
                 ColorResults[0]), ephemeral: true})
-
-        //if(interaction.member._roles.includes(`746797209995182102`))
-        //WaitTing = 1; else WaitTing = 2
 
         let ExtraData = await UserInfoSchema.findOne({User: member.id, Guild: guild.id})
         if(!ExtraData) TimeTo = Number(new Date().getTime())
@@ -93,7 +94,7 @@ module.exports = {
         const Channel = client.channels.cache.get(GuildData.ReviewChannel)
         const LogChannel = client.channels.cache.get(GuildData.LogChannel)
 
-        if(Current < TimeTo /*&& !target.user.id == "322393281306689536"*/) {
+        if(Current < TimeTo && !target.user.id == "322393281306689536") {
             Miliseconds = TimeTo - Current
             Minutes = Math.floor((Miliseconds % (1000 * 60 * 60 * 60)) / (1000 * 60))
             Seconds = Math.floor((Miliseconds % (1000 * 60 )) / 1000)
@@ -101,11 +102,11 @@ module.exports = {
             if(Minutes == 1) {TextTime = "minute"}
             if(Minutes < 1){waitTime = Seconds}if(Minutes < 1){TextTime = "seconds"}
             
-            return interaction.reply({
+            return interaction.editReply({
                 content: `You can create another review in ${waitTime} ${TextTime}`, ephemeral: true})
         }
         
-        if(target.user.bot) return interaction.reply({
+        if(target.user.bot) return interaction.editReply({
             embeds: LoadEmbed("User error has occured",
                 "You can't review a bot silly. \nPlease mention someone else instead.",
                 ColorResults[0]), ephemeral: true})
@@ -124,6 +125,8 @@ module.exports = {
                     {text: `${interaction.user.username}`,
                 iconURL: `https://cdn.discordapp.com/avatars/${interaction.user.id}/${interaction.user.avatar}.webp`}
             ), components: LoadSelect()})
+
+        interaction.editReply({content: "Your review got published!", components: LoadButtons ("Link", false, "Check it out", Data.url), ephemeral: true})
 
         const newReview = {
             ReviewId: Data.id,
@@ -161,8 +164,6 @@ module.exports = {
         thread.members.add(target.user.id);
         thread.members.add(member.id);
         thread.setRateLimitPerUser(5)
-
-        interaction.reply({components: LoadButtons ("Link", false, "Check it out", Data.url), ephemeral: true})
         
         target.user.send({
             content: `You just received a review from ${interaction.user.tag} in ${interaction.guild.name}`,

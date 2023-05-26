@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
+const wait = require('node:timers/promises').setTimeout;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,64 +16,45 @@ module.exports = {
     .addStringOption((option) => option.setName("custom").setDescription("Provide a time.")
     .setRequired(false)),
 
-    execute(interaction, client) {
+    async execute(interaction, client) {
         const { options } = interaction;
-        input = options.getString("quick")
-        const Ok1 = " minute of AB needs to be charged."
-        const Ok2 = " minutes of AB needs to be charged."
-        const bad = "Please provide a valid time method:\nUse HH: 00 to 23, MM: 00 to 59."
-        const NoInput = "No input provided."
+        const input = options.getString("quick") || options.getString("custom");
+        const Ok1 = " minute of AB needs to be charged.";
+        const Ok2 = " minutes of AB needs to be charged.";
+        const bad = "Please provide a valid time method:\nUse HH: 00 to 23, MM: 00 to 59.";
+        const NoInput = "No input provided.";
 
-        Info = new Date();
-        date = Info.getDate();
-        year = Info.getFullYear();        
-        month = Info.getMonth();  
-        hour = Info.getHours() + Number(process.env.TimeDifference);  
-        min = Info.getMinutes();
+        let Info = new Date();
+        let date = Info.getDate();
+        let year = Info.getFullYear();        
+        let month = Info.getMonth();  
+        let hour = Info.getHours() + Number(process.env.TimeDifference);  
+        let min = Info.getMinutes();
 
+        await interaction.deferReply({ephemeral: true});
+        interaction.guildId ? interaction.editReply({content: `Calculating required minites of AB!`, ephemeral: true }) : '';
         
+        if(!input) 
+            return interaction.editReply({content: `${NoInput}`, ephemeral: true });
+        
+        const [ Hours, Mins ] = input.split(':');
+        
+        if(isNaN(Hours) || isNaN(Mins))
+            return interaction.editReply({content: `${bad}`, ephemeral: true });
+        
+        hour == 24 ? 24 : 00
+        const realdate = (Hours >= hour && 
+            (Hours > hour || Mins >= min)) ? date : date + 1;
 
-        if(input == undefined)
-        {input = options.getString("custom")}
+        const ToDate = Date.UTC(year, month, realdate, Hours, Mins);
+        const now = Date.UTC(year, month, date, hour, min);   
+        const distance = ToDate - now;
+        const minutes = Math.floor((distance % (1000 * 60 * 60 * 60 )) / (1000 * 60));
+        
+        const Output = (Hours < 24 && Mins < 60) ? 
+            (minutes === 1 ? minutes + Ok1 : minutes + Ok2) : bad;
 
-        if(input == undefined)
-        {Output = NoInput}
-        else 
-        {
-            splitInput = input.split(':');
-            Hours = (splitInput[0]);
-            Mins = (splitInput[1]);	
-
-            if(isNaN(Hours) || isNaN(Mins))
-            {Output = bad}
-                else 
-                {
-                    if(hour == 24)
-                    {hour = 00}
-                
-                    if (Hours >= hour)
-                    {if(Hours == hour)
-                        {if(Mins >= min){realdate = date}
-                        else{realdate = date + 1}}	
-                        else{realdate = date}}
-                    else{realdate = date + 1}
-                
-                    ToDate = Date.UTC(year, month,	
-                    realdate, Hours, Mins);
-                    now = Date.UTC(year, month, 
-                    date, hour, min);
-                    
-                    distance = ToDate - now;
-                    minutes = Math.floor((distance % (1000 
-                    * 60 * 60 * 60 )) / (1000 * 60));
-                    
-                    if (Hours< 24 && Mins < 60)
-                    {if(minutes == 1)
-                        {Output= minutes + Ok1}
-                        else{Output= minutes + Ok2}}
-                    else{Output = bad}
-                }
-        }
-        interaction.reply({content: `${Output}`, ephemeral: true })
+        interaction.editReply({content: `${Output}`, ephemeral: true })
+        
     }
 }

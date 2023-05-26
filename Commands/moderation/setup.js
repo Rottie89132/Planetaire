@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const wait = require('node:timers/promises').setTimeout;
 const database = require("../../Schemas/Setup");
 
 module.exports = {
@@ -14,6 +15,10 @@ module.exports = {
         const { options, guild } = interaction;
         const ReviewChannel  = options.getChannel("review-channel")
         const logChannel = options.getChannel("log-channel");
+
+        await interaction.deferReply({ephemeral: true});
+        interaction.editReply({content: "Configuration started"})
+        await wait(2000)
         
         let GuildData = await database.findOneAndUpdate(
             { GuildId: guild.id, GuildName: guild.name },
@@ -22,7 +27,7 @@ module.exports = {
         if(!GuildData) GuildData = await database.create({GuildId: guild.id, GuildName: guild.name, ReviewChannel: ReviewChannel.id, LogChannel: logChannel.id})
         await GuildData.save()
 
-        if(GuildData) return interaction.reply({content: `Channels have been succesfully set!`, ephemeral: true})
-        else return interaction.reply({content: `An unkown error has occured`, ephemeral: true})
+        if(GuildData) return interaction.editReply({content: `Channels have been succesfully set!`, ephemeral: true})
+        else return interaction.editReply({content: `An unkown error has occured`, ephemeral: true})
     }
 }
