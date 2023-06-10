@@ -49,20 +49,17 @@ module.exports = {
                 return interaction.editReply({content: `${bad}`, ephemeral: true });
         }
 
+        hour == 24 ? 24 : 0;
+        const realdate = (Hours >= hour && (Hours > hour || Mins >= min)) ? date : date + 1;
+        const ToDate = starttime ? Date.UTC(year, month, date, Hours, Mins) : Date.UTC(year, month, realdate, Hours, Mins);
         
-        hour == 24 ? 24 : 00
-        const realdate = (Hours >= hour && 
-            (Hours > hour || Mins >= min)) ? date : date + 1;
-
-        const ToDate = Date.UTC(year, month, realdate, Hours, Mins);
         const now = starttime ? Date.UTC(year, month, date, starttime.split(":")[0], starttime.split(":")[1]) : Date.UTC(year, month, date, hour, min);  
         const distance = ToDate - now;
         const minutes = Math.floor((distance % (1000 * 60 * 60 * 60 )) / (1000 * 60));
         
-        let Output = (Hours >= 0 && Mins >= 0 && Hours < 24 && Mins < 60) ? 
-            (minutes === 1 ? minutes + Ok1 : minutes + Ok2) : bad;
+        let Output = (Hours >= 0 && Mins >= 0 && Hours < 24 && Mins < 60) ? (minutes === 1 ? minutes + Ok1 : minutes + Ok2) : bad;
 
-        if(starttime){
+        if(starttime) {
             const [ StartHours, StartMins ] = starttime.split(':');
             Output = (StartHours >= 0 && StartMins >= 0 && StartHours < 24 && StartMins < 60) ? 
             (minutes === 1 ? minutes + Ok1 : minutes + Ok2) : bad;
