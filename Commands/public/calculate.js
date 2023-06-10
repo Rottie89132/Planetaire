@@ -6,15 +6,15 @@ module.exports = {
     .setName("calculate")
     .setDescription("Minutes that needs to be charged")
     .setDMPermission(true)
-    .addStringOption((option) => option.setName("starttime").setDescription("Provide a time."))
+    .addStringOption((option) => option.setName("starttime").setDescription("Please provide your desired start-time."))
     .addStringOption((option) =>
-        option.setName("quick").setDescription("choose a time.").setRequired(false)
+        option.setName("quick").setDescription("Choose a preset end-time.").setRequired(false)
         .addChoices (
 		        { name: '14:00', value: '14:00' },
                 { name: '00:00', value: '00:00' },
                 { name: '02:00', value: '02:00' })   
         )
-    .addStringOption((option) => option.setName("custom").setDescription("Provide a time.")
+    .addStringOption((option) => option.setName("custom").setDescription("Please provide your desired end-time.")
     .setRequired(false)),
 
     async execute(interaction, client) {
@@ -50,8 +50,11 @@ module.exports = {
         }
 
         hour == 24 ? 24 : 0;
-        const realdate = (Hours >= hour && (Hours > hour || Mins >= min)) ? date : date + 1;
-        const ToDate = starttime ? Date.UTC(year, month, date, Hours, Mins) : Date.UTC(year, month, realdate, Hours, Mins);
+        const realdate = starttime ? 
+        (Hours >= starttime.split(":")[0] && (Hours > starttime.split(":")[0] || Mins >= starttime.split(":")[1])) ? date : date + 1 : 
+        (Hours >= hour && (Hours > hour || Mins >= min)) ? date : date + 1;
+        
+        const ToDate = Date.UTC(year, month, realdate, Hours, Mins);
         
         const now = starttime ? Date.UTC(year, month, date, starttime.split(":")[0], starttime.split(":")[1]) : Date.UTC(year, month, date, hour, min);  
         const distance = ToDate - now;
@@ -61,8 +64,8 @@ module.exports = {
 
         if(starttime) {
             const [ StartHours, StartMins ] = starttime.split(':');
-            Output = (StartHours >= 0 && StartMins >= 0 && StartHours < 24 && StartMins < 60) ? 
-            (minutes === 1 ? minutes + Ok1 : minutes + Ok2) : bad;
+            if(StartHours < 0 || StartMins < 0 || StartHours >= 24 || StartMins >= 60)
+                return interaction.editReply({content: `${bad}`, ephemeral: true })
         }
         
         interaction.editReply({content: `${Output}`, ephemeral: true })
