@@ -120,7 +120,7 @@ module.exports = {
 
         let Data = await Channel.send({
             embeds: LoadEmbed(
-                target.user.tag, `${description} \n\n**Recommendation:** \n${RatingResults[rating]}`,
+                target.user.username, `${description} \n\n**Recommendation:** \n${RatingResults[rating]}`,
                 ColorResults[rating], true, target.displayAvatarURL({ dynamic: true }),
                     {text: `${interaction.user.username}`,
                 iconURL: `https://cdn.discordapp.com/avatars/${interaction.user.id}/${interaction.user.avatar}.webp`}
@@ -133,7 +133,7 @@ module.exports = {
             IssuerGuild: guild.id,
             IssuerId: member.id,
             IssuerAvatar: member.user.avatar,
-            IssuerTag: member.user.tag,
+            IssuerTag: member.user.username,
             Issuer_Ratting: rating,
             IssuerDesc: description,
             Creation_Date: Date.now()
@@ -145,8 +145,10 @@ module.exports = {
             { $set: { 'Cooldown': Date.now() }}
         ); await ExtraData.save()
 
-        let UserData = await ReviewsSchema.findOne({User: target.id, Nickname: target.user.tag})
-        if(!UserData) UserData = await ReviewsSchema .create({User: target.id, Nickname: target.user.tag, Data: [newReview]})
+        await ReviewsSchema.findOneAndUpdate({User: target.id}, { $set: {Nickname: target.user.username}})
+
+        let UserData = await ReviewsSchema.findOne({User: target.id})
+        if(!UserData) UserData = await ReviewsSchema .create({User: target.id, Nickname: target.user.username, Data: [newReview]})
         else UserData.Data.push(newReview) && await UserData.save()
 
         LogChannel.send({embeds: LoadEmbed(
@@ -156,7 +158,7 @@ module.exports = {
             ColorResults[5], true), components: LoadButtons("Link", false, "Check it out", Data.url)})
 
         await Data.startThread({
-            name: `${target.user.tag} Case${Data.id.slice(-4)}`,
+            name: `${target.user.username} Case${Data.id.slice(-4)}`,
             type: 'GUILD_PUBLIC_THREAD'
         })
         
@@ -166,7 +168,7 @@ module.exports = {
         thread.setRateLimitPerUser(5)
         
         target.user.send({
-            content: `You just received a review from ${interaction.user.tag} in ${interaction.guild.name}`,
+            content: `You just received a review from ${interaction.user.username} in ${interaction.guild.name}`,
                 components: LoadButtons ("Link", true, "Check it out", Data.url), ephemeral: true})
         .catch(()=> console.log(`No direct messages got send.`))
     }  
