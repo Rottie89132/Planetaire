@@ -1,5 +1,7 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const database = require("../../Schemas/ReviewsSchema");
+const wait = require('node:timers/promises').setTimeout;
+const fs = require('fs');
 
 module.exports =
 {
@@ -8,6 +10,7 @@ module.exports =
         Permission: "VIEW_CHANNEL"
     },
     async execute(interaction, client) {
+        const { guild, member} = interaction
         const id = interaction.message.content.split(`:**`)[1]
         const receivedEmbed = interaction.message.embeds[0];
         const LogEmbed = new EmbedBuilder()
@@ -65,14 +68,34 @@ module.exports =
                 break;
         }
 
+        const PreUser = await database.findOne({ User: target.id, "Data.ReviewId": id.replace(" ","")})
+        const { IssuerDesc, Issuer_Ratting } = PreUser.Data[0]
+        
         let UserData = await database.findOneAndUpdate(
             { User: target.id, "Data.ReviewId": id.replace(" ","") },
-            { $set: { "Data.$.Issuer_Ratting" : ReadableRating, "Data.$.IssuerDesc" : UpdatedDesc, "Data.$.Edit_Date" : Date.now() }}
+            { $set: { "Data.$.Issuer_Ratting" : ReadableRating, "Data.$.IssuerDesc" : UpdatedDesc, "Data.$.Edit_Date" : new Date() }}
         ); await UserData.save()
+
+        const FeedItem = {
+            member, guild, content: {
+                title: `Updated a review about ${target.username}!`,
+                subject: `${IssuerDesc}`, favorability: `${Issuer_Ratting}`, updated: {
+                    subject: `${UpdatedDesc}`, favorability: `${ReadableRating}`
+                }
+            }, meta: { id: `${id.replace(" ","")}`, StatusMessage: `updated`}
+        };
+
+        const token = JSON.parse(fs.readFileSync('token.json'));
+        await fetch('http://localhost:4000/api/feed', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'authorization': `${token.session}` },
+            body: JSON.stringify(FeedItem),
+        }).then(response => response.json());
 
         channel.send({components: [Linked], embeds: [LogEmbed]})
         await interaction.editReply({components: [Linked], content: `Review got edited.`, embeds: [], ephemeral: true})
         target.send({components: [LinkRow], content: `A review about you got edited \nin ${interaction.guild.name}`, ephemeral: true})
         .catch(()=> console.log(`No direct messages got send.`))
+        await wait(2000)
+        await interaction.deleteReply()
     }
 }

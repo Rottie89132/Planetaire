@@ -12,7 +12,7 @@ client.modals = new Collection()
 
 const mongoose = require("mongoose");
 mongoose.set('strictQuery', false)
-mongoose.connect(process.env.DataBaseUrl, {}).then(() => console.log(`\x1b[32m√\x1b[0m Database successfully connected!`))
+mongoose.connect(process.env.DataBaseUrl, {}).then(() => console.log(`\x1b[32m✔\x1b[0m Database successfully connected!`))
 
 loadEvents(client);
 

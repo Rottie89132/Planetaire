@@ -5,7 +5,7 @@ module.exports =
     data: {
         CustomId: "Description"
     },
-    async execute(modal,interaction) {
+    async execute(modal, interaction) {
 
         await modal.deferUpdate({ephemeral: true});
         const receivedEmbed = modal.message.embeds[0];

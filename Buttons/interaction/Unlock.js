@@ -62,7 +62,7 @@ module.exports = {
 
         await thread.setName(thread.name.replace(`Violation`, `Case`))
         await thread.setArchived(false);
-        
+        await interaction.deleteReply()
         
     }
 }

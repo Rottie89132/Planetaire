@@ -1,8 +1,10 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder  } = require("discord.js");
-const ReviewsSchema = require("../../Schemas/ReviewsSchema");
-const UserInfoSchema = require("../../Schemas/UserInfo")
-const SetupSchema = require("../../Schemas/Setup");
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, TimestampStyles  } = require("discord.js");
 const wait = require('node:timers/promises').setTimeout;
+const fs = require('fs');
+
+const ReviewsSchema = require("../../Schemas/ReviewsSchema");
+const SetCoolDown = require("../../Schemas/Cooldowns");
+const SetupSchema = require("../../Schemas/Setup");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -26,7 +28,7 @@ module.exports = {
         const rating = options.getString("rating");
         const description = options.getString("description");
 
-        let CountRating = "Star"; if(rating > 1 ) CountRating = "Stars"
+        let CountRating = rating > 1 ?  "Stars" : "Star"
         
         RatingResults = ["⬜️⬜️⬜️⬜️⬜️", "🟥⬜️⬜️⬜️⬜️", "🟨🟨⬜️⬜️⬜️", "🟧🟧🟧⬜️⬜️", "🟩🟩🟩🟩⬜️", "🟩🟩🟩🟩🟩"]
         ColorResults = ["#364ec7", "#ff0000", "#ffd900", "#ff6600", "#49c736", "#49c736"]
@@ -86,15 +88,14 @@ module.exports = {
                 "No review channels found.\nPlease try again after setting one up with /review-setup.",
                 ColorResults[0]), ephemeral: true})
 
-        let ExtraData = await UserInfoSchema.findOne({User: member.id, Guild: guild.id})
-        if(!ExtraData) TimeTo = Number(new Date().getTime())
-        else TimeTo = Number(ExtraData.Cooldown) + 2 * 60000
+        let SetTimeOut = await SetCoolDown.findOne({UserID: member.id, GuildID: guild.id, Type: 'NextReview'})
+        let TimeTo = SetTimeOut ? new Date(SetTimeOut.TimeOut).getTime() + 5 * 60000 : new Date().getTime()
     
         const Current = new Date().getTime()
         const Channel = client.channels.cache.get(GuildData.ReviewChannel)
         const LogChannel = client.channels.cache.get(GuildData.LogChannel)
 
-        if(Current < TimeTo && !target.user.id == "322393281306689536") {
+        if(Current < TimeTo /*&& !target.user.id == "322393281306689536"*/) {
             Miliseconds = TimeTo - Current
             Minutes = Math.floor((Miliseconds % (1000 * 60 * 60 * 60)) / (1000 * 60))
             Seconds = Math.floor((Miliseconds % (1000 * 60 )) / 1000)
@@ -111,7 +112,7 @@ module.exports = {
                 "You can't review a bot silly. \nPlease mention someone else instead.",
                 ColorResults[0]), ephemeral: true})
 
-        if(target.user == interaction.member.user /*&& !target.user.id == "322393281306689536"*/) return interaction.reply({
+        if(target.user == interaction.member.user /*&& !target.user.id == "322393281306689536"*/) return interaction.editReply({
             embeds: LoadEmbed("User error has occured",
                 "You can't review yourself silly. \nPlease mention someone else instead.",
                 ColorResults[0]), ephemeral: true})
@@ -136,20 +137,33 @@ module.exports = {
             IssuerTag: member.user.username,
             Issuer_Ratting: rating,
             IssuerDesc: description,
-            Creation_Date: Date.now()
+            Creation_Date: new Date()
         }
 
-        if(!ExtraData) ExtraData = await UserInfoSchema.create({User: member.id, Guild: guild.id, Cooldown: Date.now()})
-        else ExtraData = await UserInfoSchema.findOneAndUpdate(
-            { User: member.id, Guild: guild.id },
-            { $set: { 'Cooldown': Date.now() }}
-        ); await ExtraData.save()
+        if(!SetTimeOut) SetTimeOut = await SetCoolDown.create({UserID: member.id, GuildID: guild.id, TimeOut: new Date(), Type: 'NextReview'})
+        else SetTimeOut = await SetCoolDown.findOneAndUpdate(
+            { UserID: member.id, GuildID: guild.id, Type: 'NextReview' },
+            { $set: { 'TimeOut': new Date() }}
+        ); await SetTimeOut.save()
 
         await ReviewsSchema.findOneAndUpdate({User: target.id}, { $set: {Nickname: target.user.username}})
 
         let UserData = await ReviewsSchema.findOne({User: target.id})
         if(!UserData) UserData = await ReviewsSchema .create({User: target.id, Nickname: target.user.username, Data: [newReview]})
         else UserData.Data.push(newReview) && await UserData.save()
+
+        const FeedItem = {
+            member, guild, content: {
+                title: `Published a review about ${target.user.username}!`,
+                subject: `${description}`, favorability: `${rating}`
+            }, meta: { id: `${Data.id}`, StatusMessage: `published` }
+        };
+
+        const token = JSON.parse(fs.readFileSync('token.json'));
+        await fetch('http://localhost:4000/api/feed', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'authorization': `${token.session}`},
+            body: JSON.stringify(FeedItem),
+        }).then(response => response.json());
 
         LogChannel.send({embeds: LoadEmbed(
             "ChangeLog", `${interaction.member} Created a new review

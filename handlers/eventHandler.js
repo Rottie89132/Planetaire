@@ -1,7 +1,7 @@
 const { loadFiles } = require("../Functions/fileloader");
 
 async function loadEvents(client) {
-  console.time(`\x1b[32m√\x1b[0m Events loaded in`)
+  console.time(`\x1b[32m✔\x1b[0m Events loaded in`)
     
   client.events = new Map()
   const events = new Array()
@@ -24,7 +24,7 @@ async function loadEvents(client) {
   }
 
   console.clear();
-  console.timeEnd('\x1b[32m√\x1b[0m Events loaded in'); console.log();
+  console.timeEnd('\x1b[32m✔\x1b[0m Events loaded in'); console.log();
 
   for (const item of events) {
     console.log(`  \x1b[${item.Status === 'Online' ? '32' : '31'}m> ${item.Status === 'Online' ? 'Event' : 'Error'}:\x1b[0m ${item.Name} ${item.Status === 'Online' ? 'loaded' : 'failed to load'}`);

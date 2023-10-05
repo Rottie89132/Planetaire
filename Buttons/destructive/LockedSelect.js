@@ -1,5 +1,5 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require("discord.js");
-const SetCooldown = require("../../Schemas/Cooldowns")
+const SetCoolDown = require("../../Schemas/Cooldowns");
 
 module.exports = 
 {
@@ -16,8 +16,6 @@ module.exports =
 
         const TargetId = MessageLock.embeds[0].thumbnail.url.split('/')[4]
         const logchannel = client.channels.cache.get(process.env.ChangelogChannelId);
-        const BotUser = await guild.members.fetch(client.user.id)
-        const BotHighest = BotUser.roles.highest.position
 
         const LogEmbed = new EmbedBuilder()
         const embed = EmbedBuilder.from(receivedEmbed)
@@ -26,11 +24,6 @@ module.exports =
         const row = new ActionRowBuilder()
 
         await interaction.deferUpdate();
-
-        try {
-        const Member = await guild.members.fetch(TargetId)
-        MemberHighest = Member.roles.highest.position
-        } catch{MemberHighest = 1}
 
         tags.addComponents
         (
@@ -49,9 +42,6 @@ module.exports =
             )
         )
 
-        if(BotHighest <= MemberHighest)
-        return interaction.editReply({content: `I do not have enough permisions`, components: [], ephemeral: true})
-
         embed.setDescription(`${description}`)
         embed.setFooter({text: `Review got locked!`, iconURL:  embed.data.footer.icon_url});
         await MessageLock.edit({embeds: [embed], components: [tags]})
@@ -65,11 +55,11 @@ module.exports =
         row.addComponents(new ButtonBuilder().setURL(MessageLock.url).setLabel('Message').setStyle(ButtonStyle.Link),)
         await interaction.editReply({ content: `Message got locked!`, components: []})
         
-        let GetCooldown = await SetCooldown.findOne({MessageID: MessageId, GuildId: guild.id})
-        if(!GetCooldown) SetCooldown.create({MessageID: MessageId, GuildId: guild.id, Cooldown: Date.now()})
-        else GetCooldown = await SetCooldown.findOneAndUpdate(
-            { MessageID: MessageId, GuildId: guild.id },
-            { $set: { 'Cooldown': Date.now() }}
+        let GetTimeOut = await SetCoolDown.findOne({MessageID: MessageId, GuildID: guild.id, Type: 'NextLock'})
+        if(!GetTimeOut) SetCoolDown.create({MessageID: MessageId, GuildID: guild.id, Type: 'NextLock', TimeOut: new Date()})
+        else GetTimeOut = await SetCoolDown.findOneAndUpdate(
+            { MessageID: MessageId, GuildId: guild.id, Type: 'NextLock' },
+            { $set: { 'TimeOut': new Date() }}
         );
 
         const thread = channel.threads.cache.find(x => x.name.includes(`${MessageId.slice(-4)}`))
@@ -77,7 +67,7 @@ module.exports =
         await thread.setArchived(true);
         await thread.send({content: `**Violation Detected!**\nActions have been taken against this individual
         \n\n**Individual’s information:**\nDiscriminator: <@${TargetId}>\nDiscord ID: ${TargetId}`})
-        
+        await interaction.deleteReply()
     }
 }
 

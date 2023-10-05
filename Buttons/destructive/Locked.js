@@ -64,6 +64,7 @@ module.exports =
         await thread.send({content: `**Violation Detected!**\nActions have been taken against this individual
         \n\n**Individual’s information:**\nDiscriminator: <@${TargetId}>\nDiscord ID: ${TargetId}`})
         } catch{}
+        await interaction.deleteReply()
     }
 }
 

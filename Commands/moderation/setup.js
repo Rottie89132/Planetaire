@@ -22,9 +22,17 @@ module.exports = {
         
         let GuildData = await database.findOneAndUpdate(
             { GuildId: guild.id, GuildName: guild.name },
-            { $set: { 'ReviewChannel': ReviewChannel.id, 'LogChannel': logChannel.id }}
+            { $set: { 
+                'ReviewChannel': ReviewChannel.id, 
+                'LogChannel': logChannel.id 
+            }}
         )
-        if(!GuildData) GuildData = await database.create({GuildId: guild.id, GuildName: guild.name, ReviewChannel: ReviewChannel.id, LogChannel: logChannel.id})
+        if(!GuildData) GuildData = await database.create({
+            GuildId: guild.id, 
+            GuildName: guild.name, 
+            ReviewChannel: ReviewChannel.id, 
+            LogChannel: logChannel.id,
+        })
         await GuildData.save()
 
         if(GuildData) return interaction.editReply({content: `Channels have been succesfully set!`, ephemeral: true})

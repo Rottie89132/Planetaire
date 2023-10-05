@@ -7,6 +7,7 @@ module.exports =
     {
         await interaction.deferUpdate();
         await interaction.editReply({ content: `Interacton got canceled`, components: []})
+        await interaction.deleteReply()
     }
 }
 

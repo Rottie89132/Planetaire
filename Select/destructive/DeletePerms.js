@@ -1,10 +1,8 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits  } = require("discord.js");
 
-
-module.exports = 
-{
-    data: {
-        CustomId: "DeletePerms"
+module.exports = {
+    data: { 
+        CustomId: "DeletePerms" 
     },
     async execute(interaction) {
         const { values, member } = interaction
@@ -17,8 +15,6 @@ module.exports =
         return interaction.reply({content: `You do not have the required permission for this command`, ephemeral: true})
 
         if(values[0] == 1) {
-
-            //return interaction.reply({content: `This action is currently unavailable!`, ephemeral: true})
 
             return interaction.reply({content: `Unlock this message?\n**Message ID:** ${InteractionMsg.id}`,
                 components:  [button.addComponents(
@@ -33,11 +29,6 @@ module.exports =
                     new ButtonBuilder().setCustomId('Delete').setLabel('Confirm').setStyle(ButtonStyle.Danger),
                     new ButtonBuilder().setCustomId('Dismiss').setLabel('Cancel').setStyle(ButtonStyle.Secondary)
                 )], ephemeral: true})
-
         }
-
-
-
-        
     }
 }
