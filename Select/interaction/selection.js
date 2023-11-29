@@ -56,7 +56,7 @@ module.exports =
         {
             if(interaction.user.id !== UsersReviewId) 
             {interaction.reply({content: ` You can't edit reviews you didn't make `, ephemeral: true})} 
-            else if(Current < TimeTo && interaction.user.id != 322393281306689536) {
+            else if(Current < TimeTo) {
                 Miliseconds = TimeTo - Current
                 Minutes = Math.floor((Miliseconds % (1000 * 60 * 60 * 60)) / (1000 * 60))
                 Seconds = Math.floor((Miliseconds % (1000 * 60 )) / 1000)

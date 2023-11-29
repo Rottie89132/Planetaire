@@ -86,7 +86,7 @@ module.exports =
         };
 
         const token = JSON.parse(fs.readFileSync('token.json'));
-        await fetch('http://localhost:4000/api/feed', {
+        await fetch(`${process.env.DomainUrl}/api/feed`, {
             method: 'POST', headers: { 'Content-Type': 'application/json', 'authorization': `${token.session}` },
             body: JSON.stringify(FeedItem),
         }).then(response => response.json());

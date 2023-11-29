@@ -7,7 +7,7 @@ module.exports = {
         
         await server.findOneAndRemove({GuildID: guild.id})
         const token = JSON.parse(fs.readFileSync('token.json'));
-        await fetch('http://localhost:4000/api/guildUpdate', {
+        await fetch(`${process.env.DomainUrl}/api/guildUpdate`, {
             method: 'POST', headers: { 'Content-Type': 'application/json', 'authorization': `${token.session}`},
         })
 

@@ -1,5 +1,4 @@
-
-const io = require('socket.io-client');
+const Pusher = require("pusher");
 const express = require('express');
 const cron = require('node-cron');
 const http = require('http');
@@ -7,8 +6,15 @@ const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
-const socket = io('http://localhost:3500');
 const token = JSON.parse(fs.readFileSync('token.json'));
+
+const pusher = new Pusher({
+  appId: process.env.PusherAppID,
+  key: process.env.PusherAppKey,
+  secret: process.env.PusherAppSecret,
+  cluster: process.env.cluster,
+  useTLS: true
+});
 
 updateKeyValue = () => {
   let sessionToken = crypto.randomUUID()
@@ -16,8 +22,23 @@ updateKeyValue = () => {
   fs.writeFileSync('token.json', JSON.stringify(token, null, 4))
 }
 
-cron.schedule('*/5 * * * *', async () => { 
-  http.get(process.env.ServerUrl)
+cron.schedule('*/2 * * * *', async () => { 
+  console.log(`\n\x1b[34mℹ\x1b[0m Attempting to reconnect to server!`)
+
+  setTimeout(() => {
+    const req = http.request(process.env.ServerUrl, (res) => {
+      const startTime = performance.now();
+
+      res.on('data', () => {
+        const endTime = performance.now();
+        const duration = endTime - startTime;
+        console.log(`\x1b[32m✔\x1b[0m Reconnected successfully in ${duration.toFixed(2)} milliseconds!`);
+      });
+    });
+
+    req.on('error', (error) => {});
+    req.end();
+  }, 1000)
 });
 
 cron.schedule('*/15 * * * *', () => { 
@@ -66,7 +87,7 @@ module.exports = {
             content:  { title:      content.title,    subject:      content.subject,    favorability:   content.favorability, updated: content.updated || {}  }
           })
 
-          socket.emit('event', Changelog);
+          pusher.trigger("Socket", "event", Changelog);
           return res.status(200).json({Message: 'OK: Changelog updated'});
         } catch { 
           return res.status(405).json({Message: 'Not Allowed: Invalid request'}) 
@@ -74,4 +95,5 @@ module.exports = {
     }); 
     server.listen(4000);
   }
+
 }
