@@ -56,9 +56,8 @@ module.exports = {
       app.get('/status', (req, res) => { res.status(200).json( {status: 200, message: 'OK'}) });
       
       
-      app.post('/api/guildUpdate', async (req, res) => {
-        const Header = req.headers
-        const authUser = Header.authorization
+      app.post('/api/guildUpdate:token', async (req, res) => {
+        const authUser = req.params.token
       
         if(authUser != token.session) 
           return res.status(401).json({message: "Unauthorized: credentials are invalid"});
@@ -68,13 +67,12 @@ module.exports = {
       
       })
 
-      app.post('/api/feed', async (req, res) => {
+      app.post('/api/feed/:token', async (req, res) => {
         const audit = require("../../Schemas/Audit");
-        const Header = req.headers
-        const authUser = Header.authorization
+        const authUser = req.params.token
 
-        console.log(token)
-        console.log(req.headers)
+        console.log(token.session)
+        console.log(authUser)
 
         if(authUser != token.session) 
           return res.status(401).json({message: "Unauthorized: credentials are invalid"});
