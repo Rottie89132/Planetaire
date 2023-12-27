@@ -74,7 +74,7 @@ module.exports = {
         const authUser = Header.authorization
 
         console.log(token)
-        console.log(authUser)
+        console.log(req.headers)
 
         if(authUser != token.session) 
           return res.status(401).json({message: "Unauthorized: credentials are invalid"});
