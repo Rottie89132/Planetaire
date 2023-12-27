@@ -69,7 +69,6 @@ module.exports = {
       })
 
       app.post('/api/feed', async (req, res) => {
-        console.log(`\n\x1b[34mℹ\x1b[0m Received a new request!`)
         const audit = require("../../Schemas/Audit");
         const Header = req.headers
         const authUser = Header.authorization
