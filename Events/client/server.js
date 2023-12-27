@@ -73,8 +73,8 @@ module.exports = {
         const Header = req.headers
         const authUser = Header.authorization
 
-        
-        console.log(authUser != token.session)
+        console.log(token)
+        console.log(authUser)
 
         if(authUser != token.session) 
           return res.status(401).json({message: "Unauthorized: credentials are invalid"});
@@ -89,8 +89,6 @@ module.exports = {
             guild:    { guildName:  guild.name,       guildId:      guild.id,           guildIconUrl:   guild.iconURL                                         },
             content:  { title:      content.title,    subject:      content.subject,    favorability:   content.favorability, updated: content.updated || {}  }
           })
-
-          console.log(Changelog)
 
           pusher.trigger("Socket", "event", Changelog);
           return res.status(200).json({Message: 'OK: Changelog updated'});
