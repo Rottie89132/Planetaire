@@ -71,9 +71,6 @@ module.exports = {
         const audit = require("../../Schemas/Audit");
         const authUser = req.params.token
 
-        console.log(token.session)
-        console.log(authUser)
-
         if(authUser != token.session) 
           return res.status(401).json({message: "Unauthorized: credentials are invalid"});
         updateKeyValue();
